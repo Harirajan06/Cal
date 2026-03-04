@@ -3,19 +3,19 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:google_generative_ai/google_generative_ai.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../models/food_item.dart';
 
 class NutrientAIService {
   // 1. Groq Configuration (Primary)
-  final String _groqKey =
-      "";
+  final String _groqKey = dotenv.env['GROQ_API_KEY'] ?? '';
   final String _groqModel = "llama-3.2-11b-vision-preview";
 
   // 2. Gemini Configuration (Fallbacks)
   final List<String> _geminiKeys = [
-    "",
-    "",
-    "",
+    dotenv.env['GEMINI_API_KEY_1'] ?? '',
+    dotenv.env['GEMINI_API_KEY_2'] ?? '',
+    dotenv.env['GEMINI_API_KEY_3'] ?? '',
   ];
 
   final String _systemPrompt = '''
@@ -30,6 +30,11 @@ class NutrientAIService {
   ''';
 
   Future<FoodLog> analyzeMeal(File image) async {
+    // ensure at least one valid key is present before attempting network calls
+    if (_groqKey.trim().isEmpty && _geminiKeys.every((k) => k.trim().isEmpty)) {
+      throw Exception(
+          'AI configuration missing: please provide a Groq or Gemini API key');
+    }
     final bytes = await image.readAsBytes();
     final base64Image = base64Encode(bytes);
 
@@ -46,8 +51,16 @@ class NutrientAIService {
     // TRY GEMINI KEY ROTATION
     for (String key in _geminiKeys) {
       try {
+        // some of our fallback keys may be blank placeholders
+        // using substring on an empty string will throw a RangeError
+        // which bubbles up to the caller and ends up showing the generic
+        // "Failed to analyze meal" message. guard against that by
+        // only slicing if the key is long enough and providing a
+        // meaningful description otherwise.
+        final keyPreview =
+            (key.length >= 5) ? key.substring(0, 5) : (key.isEmpty ? '<none>' : key);
         debugPrint(
-          '--- Attempting Gemini Fallback (Key: ${key.substring(0, 5)}) ---',
+          '--- Attempting Gemini Fallback (Key: $keyPreview) ---',
         );
         return await _callGemini(bytes, key);
       } catch (e) {
