@@ -301,10 +301,6 @@ class SettingsScreen extends StatelessWidget {
 
                 if (confirm == true) {
                   final success = await foodProvider.importData();
-                  // Force light theme after import and notify UI
-                  if (success && context.mounted) {
-                    themeProvider.setThemeMode(ThemeMode.light);
-                  }
 
                   if (context.mounted) {
                     if (success) {

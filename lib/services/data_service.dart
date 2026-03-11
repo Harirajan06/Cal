@@ -241,6 +241,8 @@ class DataService {
         final userBox = Hive.box('user_box');
         final mealBox = Hive.box('meal_box');
 
+        final String currentTheme = userBox.get('theme_mode', defaultValue: 'light');
+
         await userBox.clear();
         await mealBox.clear();
 
@@ -251,8 +253,8 @@ class DataService {
           await userBox.put(entry.key, entry.value);
         }
 
-        // Always force light theme after import
-        await userBox.put('theme_mode', 'light');
+        // Restore the original theme instead of overwriting it
+        await userBox.put('theme_mode', currentTheme);
 
         // Restore meal data with image path remapping
         final mealData = data['meal_data'] as List;
