@@ -266,17 +266,24 @@ class ProgressScreen extends StatelessWidget {
               SvgPicture.asset(
                 'assets/svg/streak_flame.svg',
                 colorFilter: ColorFilter.mode(primary, BlendMode.srcIn),
-                width: 48,
-                height: 48,
+                width: 36,
+                height: 36,
               ),
               Positioned(
-                bottom: 4,
-                child: Text(
-                  '$streakCount',
-                  style: GoogleFonts.poppins(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: primary,
+                bottom: 2,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).cardTheme.color ?? Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    '$streakCount',
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: primary,
+                    ),
                   ),
                 ),
               ),

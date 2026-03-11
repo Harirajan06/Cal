@@ -9,6 +9,7 @@ import '../models/food_item.dart';
 import 'pro_screen.dart'; // Added
 import '../widgets/app_logo.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'food_history_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -426,7 +427,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               fit: BoxFit.scaleDown,
                               alignment: Alignment.centerLeft,
                               child: Text(
-                                '${consumed.toInt()}',
+                                '${consumed.round()}',
                                 style: GoogleFonts.poppins(
                                   fontSize: 46,
                                   fontWeight: FontWeight.w800,
@@ -487,8 +488,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       children: [
                         Text(
                           consumed > goal
-                              ? '! ${(consumed - goal).toInt()}'
-                              : '${left.toInt()}',
+                              ? '! ${(consumed - goal).round()}'
+                              : '${left.round()}',
                           style: GoogleFonts.poppins(
                             fontSize: 28,
                             fontWeight: FontWeight.w800,
@@ -582,7 +583,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         textBaseline: TextBaseline.alphabetic,
                         children: [
                           Text(
-                            '${goal.toInt()}',
+                            '${goal.round()}',
                             style: GoogleFonts.poppins(
                               fontSize: 24,
                               fontWeight: FontWeight.w900,
@@ -677,10 +678,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
                 borderRadius: BorderRadius.circular(22),
                 border: Border.all(
-                  color: Theme.of(context).brightness == Brightness.dark
-                      ? const Color(0xFF222222)
-                      : Colors.white,
-                  width: 1.8,
+                  color: color.withValues(alpha: 0.6),
+                  width: 1.5,
                 ),
               ),
               child: Row(
@@ -743,9 +742,31 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Recently uploaded',
-          style: GoogleFonts.poppins(fontSize: 17, fontWeight: FontWeight.w700),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Recently uploaded',
+              style: GoogleFonts.poppins(fontSize: 17, fontWeight: FontWeight.w700),
+            ),
+            if (meals.isNotEmpty)
+              TextButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const FoodHistoryScreen()),
+                  );
+                },
+                child: Text(
+                  'See All',
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    color: const Color(0xFF673AB7),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+          ],
         ),
         const SizedBox(height: 14),
         if (meals.isEmpty)
@@ -787,9 +808,75 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
           )
         else
-          ...meals.take(3).map((meal) => _buildRecentMealCard(meal)),
+          ..._buildGroupedMealList(meals.take(3).toList()),
       ],
     );
+  }
+
+  String _getDateLabel(DateTime date) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final mealDay = DateTime(date.year, date.month, date.day);
+    final diff = today.difference(mealDay).inDays;
+
+    if (diff == 0) return 'Today';
+    if (diff == 1) return 'Yesterday';
+
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    ];
+    return '${date.day} ${months[date.month - 1]}';
+  }
+
+  List<Widget> _buildGroupedMealList(List<FoodLog> meals) {
+    final List<Widget> widgets = [];
+    String? lastLabel;
+
+    for (final meal in meals) {
+      final label = _getDateLabel(meal.timestamp);
+      if (label != lastLabel) {
+        if (lastLabel != null) {
+          widgets.add(const SizedBox(height: 8));
+        }
+        widgets.add(
+          Padding(
+            padding: const EdgeInsets.only(bottom: 10, top: 4),
+            child: Row(
+              children: [
+                Container(
+                  width: 6,
+                  height: 6,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF673AB7),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  label,
+                  style: GoogleFonts.poppins(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey[600],
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Container(
+                    height: 1,
+                    color: Colors.grey.withValues(alpha: 0.15),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+        lastLabel = label;
+      }
+      widgets.add(_buildRecentMealCard(meal));
+    }
+    return widgets;
   }
 
   Widget _buildRecentMealCard(FoodLog meal) {
@@ -1039,6 +1126,7 @@ class _WaterLevelMonitorWidgetState extends State<_WaterLevelMonitorWidget> {
 
     final color = isDark ? const Color(0xFF00E5FF) : const Color(0xFF2196F3);
     final bgColor = isDark ? const Color(0xFF0F1B29) : const Color(0xFFE3F2FD);
+    final bool isGoalReached = currentWater >= goalWater;
 
     return Row(
       mainAxisSize: MainAxisSize.max,
@@ -1083,13 +1171,15 @@ class _WaterLevelMonitorWidgetState extends State<_WaterLevelMonitorWidget> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        'Water',
+                        isGoalReached ? 'Done' : 'Water',
                         style: TextStyle(
-                          color: isDark
-                              ? Theme.of(context).colorScheme.onSurface
-                              : Theme.of(
-                                  context,
-                                ).colorScheme.onSurface.withValues(alpha: 0.8),
+                          color: isGoalReached
+                              ? Colors.green
+                              : isDark
+                                  ? Theme.of(context).colorScheme.onSurface
+                                  : Theme.of(
+                                      context,
+                                    ).colorScheme.onSurface.withValues(alpha: 0.8),
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
                         ),
@@ -1127,25 +1217,32 @@ class _WaterLevelMonitorWidgetState extends State<_WaterLevelMonitorWidget> {
         ),
         const SizedBox(width: 6),
         GestureDetector(
-          onTap: () {
-            // Add 250ml of water
-            Provider.of<FoodProvider>(context, listen: false).addWater(250);
-          },
+          onTap: isGoalReached
+              ? null
+              : () {
+                  Provider.of<FoodProvider>(context, listen: false).addWater(250);
+                },
           child: Container(
             width: 32,
             height: 32,
             decoration: BoxDecoration(
-              color: color,
+              color: isGoalReached ? Colors.grey[400] : color,
               shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: color.withValues(alpha: 0.3),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
-                ),
-              ],
+              boxShadow: isGoalReached
+                  ? []
+                  : [
+                      BoxShadow(
+                        color: color.withValues(alpha: 0.3),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
             ),
-            child: const Icon(Icons.add, color: Colors.white, size: 18),
+            child: Icon(
+              isGoalReached ? Icons.check : Icons.add,
+              color: Colors.white,
+              size: 18,
+            ),
           ),
         ),
       ],
@@ -1163,6 +1260,9 @@ class EditMealSheet extends StatefulWidget {
 
 class _EditMealSheetState extends State<EditMealSheet> {
   late double currentCalories;
+  late double currentProtein;
+  late double currentCarbs;
+  late double currentFat;
   late double initialCalories;
   late double initialProtein;
   late double initialCarbs;
@@ -1176,23 +1276,13 @@ class _EditMealSheetState extends State<EditMealSheet> {
     initialCarbs = widget.meal.totalCarbs;
     initialFat = widget.meal.totalFat;
     currentCalories = initialCalories;
-  }
-
-  void _adjustCalories(double delta) {
-    setState(() {
-      currentCalories = (currentCalories + delta).clamp(0, 10000);
-    });
+    currentProtein = initialProtein;
+    currentCarbs = initialCarbs;
+    currentFat = initialFat;
   }
 
   @override
   Widget build(BuildContext context) {
-    final factor = initialCalories > 0
-        ? currentCalories / initialCalories
-        : 1.0;
-    final protein = initialProtein * factor;
-    final carbs = initialCarbs * factor;
-    final fat = initialFat * factor;
-
     return Container(
       decoration: BoxDecoration(
         color: Theme.of(context).scaffoldBackgroundColor,
@@ -1214,7 +1304,6 @@ class _EditMealSheetState extends State<EditMealSheet> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Handle bar
           Container(
             width: 40,
             height: 4,
@@ -1239,12 +1328,12 @@ class _EditMealSheetState extends State<EditMealSheet> {
             child: widget.meal.imagePath != null
                 ? Image.file(
                     File(widget.meal.imagePath!),
-                    height: 180,
+                    height: 160,
                     width: double.infinity,
                     fit: BoxFit.cover,
                   )
                 : Container(
-                    height: 180,
+                    height: 160,
                     width: double.infinity,
                     color: Theme.of(context).brightness == Brightness.dark
                         ? Colors.grey[900]
@@ -1252,63 +1341,39 @@ class _EditMealSheetState extends State<EditMealSheet> {
                     child: const Center(child: AppLogo(size: 60)),
                   ),
           ),
-          const SizedBox(height: 30),
-          // Calorie editor
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 20),
-            decoration: BoxDecoration(
-              color: Theme.of(context).cardColor,
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(
-                color: Theme.of(context).dividerColor.withValues(alpha: 0.05),
-              ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _circularButton(
-                  icon: Icons.remove,
-                  onPressed: () => _adjustCalories(-50),
-                ),
-                const SizedBox(width: 30),
-                Column(
-                  children: [
-                    Text(
-                      '${currentCalories.toInt()}',
-                      style: GoogleFonts.poppins(
-                        fontSize: 42,
-                        fontWeight: FontWeight.w900,
-                        color: const Color(0xFF673AB7),
-                      ),
-                    ),
-                    Text(
-                      'Kcal',
-                      style: GoogleFonts.poppins(
-                        color: Colors.grey,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(width: 30),
-                _circularButton(
-                  icon: Icons.add,
-                  onPressed: () => _adjustCalories(50),
-                ),
-              ],
-            ),
+          const SizedBox(height: 24),
+          // Calorie editor (large)
+          _buildMacroEditor(
+            label: 'Calories',
+            value: currentCalories,
+            unit: 'Kcal',
+            color: const Color(0xFF673AB7),
+            step: 50,
+            onChanged: (v) => setState(() => currentCalories = v),
+            large: true,
           ),
-          const SizedBox(height: 30),
+          const SizedBox(height: 16),
           // Macro row
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _macroMetric('🥩', 'Protein', protein),
-              _macroMetric('🍞', 'Carbs', carbs),
-              _macroMetric('🥑', 'Fats', fat),
-            ],
+          Builder(
+            builder: (context) {
+              final calFactor = initialCalories > 0
+                  ? currentCalories / initialCalories
+                  : 1.0;
+              final protein = initialProtein * calFactor;
+              final carbs = initialCarbs * calFactor;
+              final fat = initialFat * calFactor;
+
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _macroMetric('🥩', 'Protein', protein),
+                  _macroMetric('🍞', 'Carbs', carbs),
+                  _macroMetric('🥑', 'Fats', fat),
+                ],
+              );
+            },
           ),
-          const SizedBox(height: 40),
+          const SizedBox(height: 30),
           SizedBox(
             width: double.infinity,
             height: 60,
@@ -1322,15 +1387,22 @@ class _EditMealSheetState extends State<EditMealSheet> {
                 ),
               ),
               onPressed: () {
+                final calFactor = initialCalories > 0
+                    ? currentCalories / initialCalories
+                    : 1.0;
+                final proFactor = calFactor;
+                final carbFactor = calFactor;
+                final fatFactor = calFactor;
+
                 final newLog = widget.meal.copyWith(
                   items: widget.meal.items
                       .map(
                         (item) => item.copyWith(
-                          calories: item.calories * factor,
-                          protein: item.protein * factor,
-                          carbs: item.carbs * factor,
-                          fat: item.fat * factor,
-                          weightG: item.weightG * factor,
+                          calories: item.calories * calFactor,
+                          protein: item.protein * proFactor,
+                          carbs: item.carbs * carbFactor,
+                          fat: item.fat * fatFactor,
+                          weightG: item.weightG * calFactor,
                         ),
                       )
                       .toList(),
@@ -1371,8 +1443,8 @@ class _EditMealSheetState extends State<EditMealSheet> {
                           context,
                           listen: false,
                         ).deleteLog(widget.meal);
-                        Navigator.pop(context); // close dialog
-                        Navigator.pop(context); // close sheet
+                        Navigator.pop(context);
+                        Navigator.pop(context);
                       },
                       child: const Text(
                         'Delete',
@@ -1397,19 +1469,90 @@ class _EditMealSheetState extends State<EditMealSheet> {
     );
   }
 
-  Widget _circularButton({
-    required IconData icon,
-    required VoidCallback onPressed,
+  Widget _buildMacroEditor({
+    required String label,
+    required double value,
+    required String unit,
+    required Color color,
+    required double step,
+    required ValueChanged<double> onChanged,
+    bool large = false,
   }) {
-    return GestureDetector(
-      onTap: onPressed,
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: const Color(0xFF673AB7).withValues(alpha: 0.1),
-          shape: BoxShape.circle,
+    return Container(
+      padding: EdgeInsets.symmetric(
+        vertical: large ? 16 : 10,
+        horizontal: large ? 0 : 4,
+      ),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(large ? 24 : 16),
+        border: Border.all(
+          color: color.withValues(alpha: 0.3),
+          width: 1.2,
         ),
-        child: Icon(icon, color: const Color(0xFF673AB7), size: 24),
+      ),
+      child: Column(
+        children: [
+          if (!large)
+            Text(
+              label,
+              style: GoogleFonts.poppins(
+                fontSize: 11,
+                color: color,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          if (!large) const SizedBox(height: 4),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              GestureDetector(
+                onTap: () => onChanged((value - step).clamp(0, 99999)),
+                child: Container(
+                  padding: EdgeInsets.all(large ? 12 : 6),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.remove, color: color, size: large ? 24 : 14),
+                ),
+              ),
+              SizedBox(width: large ? 30 : 4),
+              Column(
+                children: [
+                  Text(
+                    '${value.round()}',
+                    style: GoogleFonts.poppins(
+                      fontSize: large ? 42 : 18,
+                      fontWeight: FontWeight.w900,
+                      color: color,
+                    ),
+                  ),
+                  Text(
+                    unit,
+                    style: GoogleFonts.poppins(
+                      color: Colors.grey,
+                      fontWeight: FontWeight.w600,
+                      fontSize: large ? 14 : 10,
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(width: large ? 30 : 4),
+              GestureDetector(
+                onTap: () => onChanged((value + step).clamp(0, 99999)),
+                child: Container(
+                  padding: EdgeInsets.all(large ? 12 : 6),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.add, color: color, size: large ? 24 : 14),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -1439,3 +1582,4 @@ class _EditMealSheetState extends State<EditMealSheet> {
     );
   }
 }
+

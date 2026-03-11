@@ -8,7 +8,7 @@
     android:gravity="center"
     android:padding="12dp">
 
-    <RelativeLayout
+    <FrameLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content">
         <ImageView
@@ -20,13 +20,13 @@
             android:id="@+id/streak_count_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:layout_marginTop="8dp"
+            android:layout_gravity="bottom|center_horizontal"
+            android:layout_marginBottom="3dp"
             android:text="0"
             android:textColor="#673AB7"
-            android:textSize="12sp"
+            android:textSize="15sp"
             android:textStyle="bold" />
-    </RelativeLayout>
+    </FrameLayout>
 
     <TextView
         android:id="@+id/widget_title"

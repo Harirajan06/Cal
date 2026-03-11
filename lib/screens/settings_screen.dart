@@ -84,7 +84,8 @@ class SettingsScreen extends StatelessWidget {
             context,
             'Backup & Restore',
             Icons.backup_outlined,
-            onTap: () => _showDataBottomSheet(context, foodProvider),
+            onTap: () => _showDataBottomSheet(context, foodProvider, themeProvider),
+
           ),
           const SizedBox(height: 100), // Space for floating nav bar
         ],
@@ -188,7 +189,12 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  void _showDataBottomSheet(BuildContext context, FoodProvider foodProvider) {
+  void _showDataBottomSheet(
+    BuildContext context,
+    FoodProvider foodProvider,
+    ThemeProvider themeProvider,
+  ) {
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -235,6 +241,11 @@ class SettingsScreen extends StatelessWidget {
                 Navigator.pop(context);
                 try {
                   await foodProvider.exportData();
+                  // Force light theme after export
+                  if (context.mounted) {
+                    themeProvider.setThemeMode(ThemeMode.light);
+                  }
+
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
@@ -290,6 +301,11 @@ class SettingsScreen extends StatelessWidget {
 
                 if (confirm == true) {
                   final success = await foodProvider.importData();
+                  // Force light theme after import and notify UI
+                  if (success && context.mounted) {
+                    themeProvider.setThemeMode(ThemeMode.light);
+                  }
+
                   if (context.mounted) {
                     if (success) {
                       ScaffoldMessenger.of(context).showSnackBar(
