@@ -1,0 +1,15 @@
+<svg width="512" height="512" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Outer Macro Rings (3 Segments) -->
+  <!-- Protein Segment (Top Right) -->
+  <path d="M50 20 A30 30 0 0 1 80 50" stroke="#CCFF00" stroke-width="6" stroke-linecap="round"/>
+  <!-- Carbs Segment (Bottom) -->
+  <path d="M71.2 71.2 A30 30 0 0 1 28.8 71.2" stroke="#CCFF00" stroke-width="6" stroke-opacity="0.6" stroke-linecap="round"/>
+  <!-- Fats Segment (Top Left) -->
+  <path d="M20 50 A30 30 0 0 1 50 20" stroke="#CCFF00" stroke-width="6" stroke-opacity="0.3" stroke-linecap="round"/>
+  
+  <!-- Central AI Lens -->
+  <circle cx="50" cy="50" r="10" fill="#CCFF00"/>
+  
+  <!-- Focus/Scanning Crosshairs -->
+  <path d="M40 50 H32 M60 50 H68 M50 40 V32 M50 60 V68" stroke="#CCFF00" stroke-width="2" stroke-linecap="round"/>
+</svg>

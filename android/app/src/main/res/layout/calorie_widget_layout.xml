@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/calorie_widget_container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/calorie_widget_background"
+    android:orientation="vertical"
+    android:gravity="center_horizontal"
+    android:paddingLeft="8dp"
+    android:paddingRight="8dp"
+    android:paddingTop="0dp"
+    android:paddingBottom="2dp">
+
+    <!-- Content centered with Ring — fills remaining space -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <!-- Background Ring (Dark) -->
+        <ProgressBar
+            android:id="@+id/calorie_ring_bg_dark"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="90dp"
+            android:layout_height="90dp"
+            android:layout_gravity="center"
+            android:progressDrawable="@drawable/calorie_ring_0"
+            android:max="100"
+            android:progress="100" />
+
+        <!-- Background Ring (Light) -->
+        <ProgressBar
+            android:id="@+id/calorie_ring_bg_light"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="90dp"
+            android:layout_height="90dp"
+            android:layout_gravity="center"
+            android:progressDrawable="@drawable/calorie_ring_0_light"
+            android:max="100"
+            android:progress="100"
+            android:visibility="gone" />
+
+        <!-- Foreground Ring (Dark) -->
+        <ProgressBar
+            android:id="@+id/calorie_progress_bar"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="90dp"
+            android:layout_height="90dp"
+            android:layout_gravity="center"
+            android:progressDrawable="@drawable/calorie_progress_ring"
+            android:max="2000"
+            android:progress="0" />
+
+        <!-- Foreground Ring (Light) -->
+        <ProgressBar
+            android:id="@+id/calorie_progress_bar_light"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="90dp"
+            android:layout_height="90dp"
+            android:layout_gravity="center"
+            android:progressDrawable="@drawable/calorie_progress_ring_light"
+            android:max="2000"
+            android:progress="0"
+            android:visibility="gone" />
+
+        <!-- Text inside ring -->
+        <LinearLayout
+            android:layout_width="90dp"
+            android:layout_height="90dp"
+            android:layout_gravity="center"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <!-- Consumed calories -->
+            <TextView
+                android:id="@+id/calorie_count_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0"
+                android:textColor="#FFFFFF"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:fontFamily="sans-serif-medium" />
+
+            <!-- kcal label -->
+            <TextView
+                android:id="@+id/kcal_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="kcal"
+                android:textColor="#9E9E9E"
+                android:textSize="12sp"
+                android:layout_marginTop="-2dp" />
+        </LinearLayout>
+    </FrameLayout>
+
+    <!-- Bottom stats row -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingBottom="6dp"
+        android:paddingTop="2dp">
+
+        <!-- Water -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <TextView
+                android:id="@+id/water_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0 ml"
+                android:textColor="#FFFFFF"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/water_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="water"
+                android:textColor="#757575"
+                android:textSize="9sp" />
+        </LinearLayout>
+
+        <!-- Divider -->
+        <FrameLayout
+            android:id="@+id/stats_divider"
+            android:layout_width="1dp"
+            android:layout_height="20dp"
+            android:background="#333333" />
+
+        <!-- Budget -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <TextView
+                android:id="@+id/goal_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="2000"
+                android:textColor="#FFFFFF"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/budget_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="budget"
+                android:textColor="#757575"
+                android:textSize="9sp" />
+        </LinearLayout>
+    </LinearLayout>
+
+</LinearLayout>

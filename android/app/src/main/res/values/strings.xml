@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="calorie_widget_description">Shows your daily calorie intake with progress</string>
+</resources>
